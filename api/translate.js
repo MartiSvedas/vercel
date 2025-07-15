@@ -1,46 +1,109 @@
 import axios from 'axios';
 
+// Configuración de seguridad
+const ALLOWED_ORIGINS = [
+  'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app',
+  'https://flutterflow.io' // Opcional: añade otros dominios permitidos
+];
+
 export default async function handler(req, res) {
-  // 🔒 Habilitar CORS para FlutterFlow (cambiá por tu dominio si usás otro)
-  res.setHeader('Access-Control-Allow-Origin', 'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app');
+  // 🔒 Configuración CORS dinámica
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Vary', 'Origin'); // Importante para cache de CORS
 
   // ✅ Responder a preflight OPTIONS
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(204).end(); // 204 No Content es más apropiado para OPTIONS
   }
 
   // ❌ Rechazar métodos que no sean POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
+    return res.status(405).json({ 
+      error: 'Método no permitido',
+      allowed_methods: ['POST']
+    });
   }
 
+  // 🛡️ Validación de entrada mejorada
   const { text, target_lang, source_lang = 'auto' } = req.body;
 
-  if (!text || !target_lang) {
-    return res.status(400).json({ error: 'Faltan parámetros' });
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ 
+      error: 'Parámetro "text" inválido o faltante',
+      example: { text: "Hello", target_lang: "ES" }
+    });
   }
 
   try {
+    // ✨ Mejora: Limitar longitud del texto
+    if (text.length > 5000) {
+      return res.status(413).json({ 
+        error: 'Texto demasiado largo',
+        max_length: 5000
+      });
+    }
+
+    // 🚀 Llamada a DeepL API optimizada
+    const startTime = Date.now();
     const response = await axios.post(
       'https://api-free.deepl.com/v2/translate',
-      null,
+      {
+        text: [text], // Envía como array para mejor compatibilidad
+        target_lang,
+      },
       {
         headers: {
-          Authorization: `DeepL-Auth-Key ${process.env.DEEPL_API_KEY}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `DeepL-Auth-Key ${process.env.DEEPL_API_KEY}`,
+          'Content-Type': 'application/json', // Mejor que x-www-form-urlencoded
+          'User-Agent': 'FlutterFlow-DeepL-Proxy/1.0'
         },
-        params: {
-          text,
-          target_lang,
-          source_lang,
-        },
+        timeout: 10000 // 10 segundos timeout
       }
     );
 
-    res.status(200).json(response.data);
+    // ⏱️ Log de performance
+    console.log(`Traducción completada en ${Date.now() - startTime}ms`);
+
+    // 📦 Formatear respuesta consistentemente
+    res.status(200).json({
+      success: true,
+      data: {
+        translated_text: response.data.translations[0].text,
+        detected_language: response.data.translations[0].detected_source_language,
+        character_count: text.length
+      },
+      meta: {
+        api: 'DeepL',
+        version: 'v2'
+      }
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.response?.data || err.message });
+    // 🛠️ Manejo de errores mejorado
+    console.error('Error en DeepL API:', {
+      error: err.message,
+      stack: err.stack,
+      request: { text, target_lang, source_lang },
+      response: err.response?.data
+    });
+
+    const statusCode = err.response?.status || 500;
+    const errorData = err.response?.data || { 
+      message: 'Error interno del servidor' 
+    };
+
+    res.status(statusCode).json({
+      success: false,
+      error: {
+        code: statusCode,
+        message: errorData.message || 'Error desconocido en la traducción',
+        details: statusCode === 500 ? undefined : errorData // No exponer detalles en errores 500
+      }
+    });
   }
 }
