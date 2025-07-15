@@ -7,8 +7,6 @@ const ALLOWED_ORIGINS = [
 ];
 
 export default async function handler(req, res) {
-  // 🔒 Configuración CORS dinámica
-  const origin = req.headers.origin;
   // 🔒 Configuración CORS dinámica — asegurarse que siempre se aplica
   const origin = req.headers.origin || '';
   const allowed = ALLOWED_ORIGINS.includes(origin);
