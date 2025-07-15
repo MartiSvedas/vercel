@@ -1,6 +1,6 @@
-{
-  "name": "deepl-proxy-vercel",
-  "dependencies": {
-    "axios": "^1.6.0"
-  }
-}
+ {
+    "name":"deepl-proxy-vercel",
+    "dependencies":{
+        "axios":"^1.10.0"
+    }
+    }
