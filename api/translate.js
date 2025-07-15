@@ -1,6 +1,17 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
+  // 🔒 Habilitar CORS para FlutterFlow (cambiá por tu dominio si usás otro)
+  res.setHeader('Access-Control-Allow-Origin', 'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // ✅ Responder a preflight OPTIONS
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // ❌ Rechazar métodos que no sean POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
@@ -23,6 +34,7 @@ export default async function handler(req, res) {
         params: {
           text,
           target_lang,
+          source_lang,
         },
       }
     );
