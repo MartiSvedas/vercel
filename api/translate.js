@@ -9,16 +9,18 @@ const ALLOWED_ORIGINS = [
 export default async function handler(req, res) {
   // 🔒 Configuración CORS dinámica
   const origin = req.headers.origin;
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  // 🔒 Configuración CORS dinámica — asegurarse que siempre se aplica
+  const origin = req.headers.origin || '';
+  const allowed = ALLOWED_ORIGINS.includes(origin);
+
+  res.setHeader('Access-Control-Allow-Origin', allowed ? origin : 'null');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Vary', 'Origin'); // Importante para cache de CORS
+  res.setHeader('Vary', 'Origin');
 
-  // ✅ Responder a preflight OPTIONS
   if (req.method === 'OPTIONS') {
-    return res.status(204).end(); // 204 No Content es más apropiado para OPTIONS
+    // ✅ Asegurarse de incluir todos los headers incluso en preflight
+    return res.status(204).end();
   }
 
   // ❌ Rechazar métodos que no sean POST
