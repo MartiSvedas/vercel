@@ -17,13 +17,12 @@ export default async function handler(req, res) {
       null,
       {
         headers: {
-          Authorization: `DeepL-Auth-Key ${process.env.DEEPL_API_KEY}`,
+          Authorization: `DeepL-Auth-Key ${process.env.2218fe09-2c6b-436b-8e2c-0a6cd5d881f0:fx}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         params: {
           text,
           target_lang,
-          source_lang,
         },
       }
     );
