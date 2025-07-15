@@ -11,7 +11,13 @@ export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   const allowed = ALLOWED_ORIGINS.includes(origin);
 
-  res.setHeader('Access-Control-Allow-Origin', allowed ? origin : 'null');
+   // Establece los encabezados CORS para todas las respuestas
+  if (allowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Si el origen no está permitido, simplemente no establezcas el encabezado Access-Control-Allow-Origin.
+    // El navegador bloqueará la solicitud por sí mismo.
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Vary', 'Origin');
@@ -20,7 +26,11 @@ export default async function handler(req, res) {
     // ✅ Asegurarse de incluir todos los headers incluso en preflight
     return res.status(204).end();
   }
-
+ // Si el origen no está permitido para la solicitud POST real, envía un 403 Forbidden.
+  // Esta es una verificación redundante si el navegador bloquea correctamente el preflight, pero es buena para llamadas directas.
+  if (!allowed) {
+    return res.status(403).json({ error: 'Origin no permitido' });
+  }
   // ❌ Rechazar métodos que no sean POST
   if (req.method !== 'POST') {
     return res.status(405).json({ 
