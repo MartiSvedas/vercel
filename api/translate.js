@@ -4,8 +4,8 @@ import axios from 'axios';
 const ALLOWED_ORIGINS = [
   'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app',
   'https://app.flutterflow.io',
-  'null', 
-  'https://flutterflow.io',// Para apps móviles
+  'https://flutterflow.io',
+  'null', // Para apps móviles
   '' // Para otros casos// Opcional: añade otros dominios permitidos
 ];
 
