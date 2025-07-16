@@ -5,8 +5,7 @@ const ALLOWED_ORIGINS = [
   'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app',
   'https://app.flutterflow.io',
   'https://flutterflow.io',
-  'null', // Para apps móviles
-  '' // Para otros casos// Opcional: añade otros dominios permitidos
+  'null'// Opcional: añade otros dominios permitidos
 ];
 
 export default async function handler(req, res) {
