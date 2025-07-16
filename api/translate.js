@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuración de seguridad
 const ALLOWED_ORIGINS = [
-  'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app/',
+  'https://final-proyect-chat-traductor-ofdo6c.flutterflow.app',
   'https://flutterflow.io' // Opcional: añade otros dominios permitidos
 ];
 
